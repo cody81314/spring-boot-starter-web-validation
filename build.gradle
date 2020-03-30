@@ -1,0 +1,91 @@
+plugins {
+	id 'org.springframework.boot' version '2.2.5.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+    id 'maven'
+}
+
+group = 'tw.com.ruten'
+version = '0.0.2-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+ext {
+	set('repositoryUserName', 'admin')
+	set('repositoryPwd', 'admin')
+	set('mavenUploadUrl', 'http://172.31.0.222:31000/artifactory/maven-release-local/')
+	set('mavenDownloadUrl', 'http://172.31.0.222:31000/artifactory/jcenter/')
+}
+
+repositories {
+	// 內部自行上傳的lib
+	maven {
+		url "${mavenUploadUrl}"
+	}
+
+	// 由內部repositroy代理下載lib
+	maven {
+		url "${mavenDownloadUrl}"
+	}
+}
+
+//  Table 1. Release train Spring Boot compatibility
+//
+//      Release Train	Boot Version
+//
+//		Hoxton				2.2.x
+//
+//      Greenwich           2.1.x
+//
+//      Finchley            2.0.x
+//
+//      Edgware             1.5.x
+
+dependencyManagement {
+	imports {
+		mavenBom 'org.springframework.cloud:spring-cloud-dependencies:Hoxton.RELEASE'
+	}
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-autoconfigure'
+	
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation 'org.assertj:assertj-core'
+	
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+jar.enabled = true
+
+//  發佈artifact的主程式
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            // 選擇上傳的repository，在這邊我們選擇libs-release-local
+            // authentication()則是伺服器的帳號密碼
+            repository(url: "${mavenUploadUrl}") {
+                authentication(userName: "${repositoryUserName}", password: "${repositoryPwd}")
+            }
+            // 輸入artifact的version,artifactId,groupId
+            pom.groupId = rootProject.group
+            pom.artifactId = rootProject.name
+            pom.version = version
+        }
+    }
+}
