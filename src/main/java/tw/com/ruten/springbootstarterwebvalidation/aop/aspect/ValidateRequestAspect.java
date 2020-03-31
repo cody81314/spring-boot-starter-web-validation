@@ -40,7 +40,7 @@ public class ValidateRequestAspect {
         Parameter[] parameters = method.getParameters();
         Object[] args = joinPoint.getArgs();
 
-        IntStream.range(0, parameters.length).parallel()
+        IntStream.range(0, parameters.length)
                 .forEach(idx -> {
                     Optional<Validate> validateAnnotationOpt =
                             Optional.ofNullable(parameters[idx].getAnnotation(Validate.class));
@@ -56,7 +56,7 @@ public class ValidateRequestAspect {
         if (target != null) {
             if (Iterable.class.isAssignableFrom(target.getClass())) {
                 Iterable iterable = (Iterable) target;
-                Stream stream = StreamSupport.stream(iterable.spliterator(), true);
+                Stream stream = StreamSupport.stream(iterable.spliterator(), false);
 
                 stream.forEach(iteratedObj -> validate(annotation, iteratedObj, targetName));
 
@@ -70,14 +70,14 @@ public class ValidateRequestAspect {
         if (StringUtils.hasText(annotation.pattern()))
             validationProviderMap.get(STRING_PATTERN_PROVIDER_ID).validate(target, targetName, annotation);
 
-        Arrays.stream(annotation.providers()).parallel()
+        Arrays.stream(annotation.providers())
                 .map(providerId -> validationProviderMap.get(providerId))
                 .forEach(validationProvider -> validationProvider.validate(target, targetName, annotation));
 
         if (annotation.wrapper()) {
             Field[] declaredFields = target.getClass().getDeclaredFields();
 
-            Arrays.stream(declaredFields).parallel()
+            Arrays.stream(declaredFields)
                     .forEach(field -> {
                         Optional<Validate> validateAnnotationOpt = Optional.ofNullable(field.getAnnotation(Validate.class));
                         validateAnnotationOpt.ifPresent(validate -> {
