@@ -74,7 +74,7 @@ public class ValidateRequestAspect {
                 .map(providerId -> validationProviderMap.get(providerId))
                 .forEach(validationProvider -> validationProvider.validate(target, targetName, annotation));
 
-        if (annotation.wrapper()) {
+        if (annotation.wrapper() && target != null) {
             Field[] declaredFields = target.getClass().getDeclaredFields();
 
             Arrays.stream(declaredFields)
