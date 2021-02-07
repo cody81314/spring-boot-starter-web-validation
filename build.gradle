@@ -23,15 +23,7 @@ ext {
 }
 
 repositories {
-	// 內部自行上傳的lib
-	maven {
-		url "${mavenUploadUrl}"
-	}
-
-	// 由內部repositroy代理下載lib
-	maven {
-		url "${mavenDownloadUrl}"
-	}
+	mavenCentral()
 }
 
 //  Table 1. Release train Spring Boot compatibility
